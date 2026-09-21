@@ -59,17 +59,23 @@ class CommandsAccessoryTest < ActiveSupport::TestCase
     teardown_test_secrets
   end
 
+  test "run with destination" do
+    command = Kamal::Commands::Accessory.new(Kamal::Configuration.new(@config, destination: "staging"), name: :mysql)
+
+    assert_includes command.run.join(" "), "--label service=\"app-mysql\" --label app_name=\"app\" --label accessory_name=\"mysql\" --label destination=\"staging\""
+  end
+
   test "run" do
     assert_equal \
-      "docker run --name app-mysql --detach --restart unless-stopped --network kamal --log-opt max-size=\"10m\" --publish 127.0.0.1:3306:3306 --env MYSQL_ROOT_HOST=\"%\" --env-file .kamal/apps/app/env/accessories/mysql.env --label service=\"app-mysql\" --cpus \"4\" --memory \"2GB\" private.registry/mysql:8.0",
+      "docker run --name app-mysql --detach --restart unless-stopped --network kamal --log-opt max-size=\"10m\" --publish 127.0.0.1:3306:3306 --env MYSQL_ROOT_HOST=\"%\" --env-file .kamal/apps/app/env/accessories/mysql.env --label service=\"app-mysql\" --label app_name=\"app\" --label accessory_name=\"mysql\" --label destination --cpus \"4\" --memory \"2GB\" private.registry/mysql:8.0",
       new_command(:mysql).run.join(" ")
 
     assert_equal \
-      "docker run --name app-redis --detach --restart unless-stopped --network kamal --log-opt max-size=\"10m\" --publish 127.0.0.1:6379:6379 --env SOMETHING=\"else\" --env-file .kamal/apps/app/env/accessories/redis.env --volume /var/lib/redis:/data --label service=\"app-redis\" --label cache=\"true\" redis:latest",
+      "docker run --name app-redis --detach --restart unless-stopped --network kamal --log-opt max-size=\"10m\" --publish 127.0.0.1:6379:6379 --env SOMETHING=\"else\" --env-file .kamal/apps/app/env/accessories/redis.env --volume /var/lib/redis:/data --label service=\"app-redis\" --label app_name=\"app\" --label accessory_name=\"redis\" --label destination --label cache=\"true\" redis:latest",
       new_command(:redis).run.join(" ")
 
     assert_equal \
-      "docker run --name custom-busybox --detach --restart unless-stopped --network kamal --log-opt max-size=\"10m\" --env-file .kamal/apps/app/env/accessories/busybox.env --label service=\"custom-busybox\" other.registry/busybox:latest",
+      "docker run --name custom-busybox --detach --restart unless-stopped --network kamal --log-opt max-size=\"10m\" --env-file .kamal/apps/app/env/accessories/busybox.env --label service=\"custom-busybox\" --label app_name=\"app\" --label accessory_name=\"busybox\" --label destination other.registry/busybox:latest",
       new_command(:busybox).run.join(" ")
   end
 
@@ -77,7 +83,7 @@ class CommandsAccessoryTest < ActiveSupport::TestCase
     @config[:logging] = { "driver" => "local", "options" => { "max-size" => "100m", "max-file" => "3" } }
 
     assert_equal \
-      "docker run --name custom-busybox --detach --restart unless-stopped --network kamal --log-driver \"local\" --log-opt max-size=\"100m\" --log-opt max-file=\"3\" --env-file .kamal/apps/app/env/accessories/busybox.env --label service=\"custom-busybox\" other.registry/busybox:latest",
+      "docker run --name custom-busybox --detach --restart unless-stopped --network kamal --log-driver \"local\" --log-opt max-size=\"100m\" --log-opt max-file=\"3\" --env-file .kamal/apps/app/env/accessories/busybox.env --label service=\"custom-busybox\" --label app_name=\"app\" --label accessory_name=\"busybox\" --label destination other.registry/busybox:latest",
       new_command(:busybox).run.join(" ")
   end
 
@@ -85,7 +91,7 @@ class CommandsAccessoryTest < ActiveSupport::TestCase
     @config[:accessories]["mysql"]["options"]["restart"] = "on-failure"
 
     assert_equal \
-      "docker run --name app-mysql --detach --restart on-failure --network kamal --log-opt max-size=\"10m\" --publish 127.0.0.1:3306:3306 --env MYSQL_ROOT_HOST=\"%\" --env-file .kamal/apps/app/env/accessories/mysql.env --label service=\"app-mysql\" --cpus \"4\" --memory \"2GB\" private.registry/mysql:8.0",
+      "docker run --name app-mysql --detach --restart on-failure --network kamal --log-opt max-size=\"10m\" --publish 127.0.0.1:3306:3306 --env MYSQL_ROOT_HOST=\"%\" --env-file .kamal/apps/app/env/accessories/mysql.env --label service=\"app-mysql\" --label app_name=\"app\" --label accessory_name=\"mysql\" --label destination --cpus \"4\" --memory \"2GB\" private.registry/mysql:8.0",
       new_command(:mysql).run.join(" ")
   end
 
@@ -93,7 +99,7 @@ class CommandsAccessoryTest < ActiveSupport::TestCase
     @config[:accessories]["mysql"]["network"] = "custom"
 
     assert_equal \
-      "docker run --name app-mysql --detach --restart unless-stopped --network custom --log-opt max-size=\"10m\" --publish 127.0.0.1:3306:3306 --env MYSQL_ROOT_HOST=\"%\" --env-file .kamal/apps/app/env/accessories/mysql.env --label service=\"app-mysql\" --cpus \"4\" --memory \"2GB\" private.registry/mysql:8.0",
+      "docker run --name app-mysql --detach --restart unless-stopped --network custom --log-opt max-size=\"10m\" --publish 127.0.0.1:3306:3306 --env MYSQL_ROOT_HOST=\"%\" --env-file .kamal/apps/app/env/accessories/mysql.env --label service=\"app-mysql\" --label app_name=\"app\" --label accessory_name=\"mysql\" --label destination --cpus \"4\" --memory \"2GB\" private.registry/mysql:8.0",
       new_command(:mysql).run.join(" ")
   end
 

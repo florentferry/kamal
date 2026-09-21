@@ -144,7 +144,7 @@ class Kamal::Configuration::Accessory
     end
 
     def default_labels
-      { "service" => service_name }
+      { "service" => service_name, "app_name" => config.service, "accessory_name" => name, "destination" => config.destination }
     end
 
     def expand_local_file(local_file)

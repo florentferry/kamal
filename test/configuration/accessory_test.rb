@@ -211,8 +211,14 @@ class ConfigurationAccessoryTest < ActiveSupport::TestCase
   end
 
   test "label args" do
-    assert_equal [ "--label", "service=\"app-mysql\"" ], @config.accessory(:mysql).label_args
-    assert_equal [ "--label", "service=\"app-redis\"", "--label", "cache=\"true\"" ], @config.accessory(:redis).label_args
+    assert_equal [ "--label", "service=\"app-mysql\"", "--label", "app_name=\"app\"", "--label", "accessory_name=\"mysql\"", "--label", "destination" ], @config.accessory(:mysql).label_args
+    assert_equal [ "--label", "service=\"app-redis\"", "--label", "app_name=\"app\"", "--label", "accessory_name=\"redis\"", "--label", "destination", "--label", "cache=\"true\"" ], @config.accessory(:redis).label_args
+  end
+
+  test "label args with destination" do
+    config = Kamal::Configuration.new(@deploy, destination: "staging")
+
+    assert_equal [ "--label", "service=\"app-mysql\"", "--label", "app_name=\"app\"", "--label", "accessory_name=\"mysql\"", "--label", "destination=\"staging\"" ], config.accessory(:mysql).label_args
   end
 
   test "env args" do
